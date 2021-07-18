@@ -1,0 +1,21 @@
+---
+- hosts: all
+  gather_facts: yes
+
+  roles:
+    - nvim
+    - rust
+
+  tasks:
+    - name: Copy over inputrc config over
+      copy:
+        force: yes
+        dest: "$HOME/.inputrc"
+        content: |
+          $include /etc/inputrc
+          set completion-ignore-case on
+          set visible-stats on
+          set colored-stats on
+          set show-all-if-ambiguous on
+          set match-hidden-files off
+          set completion-query-items 200

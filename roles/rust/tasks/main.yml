@@ -1,0 +1,37 @@
+---
+- name: Check if rust is installed
+  stat:
+    path: "$HOME/.cargo/bin/rustc"
+  register: is_rust_installed
+
+- block:
+  - name: Download rustup
+    get_url:
+      url: https://sh.rustup.rs
+      dest: /tmp/rustup-init.sh
+      mode: '0777'
+
+  - name: Install rust using rustup
+    shell: |
+      /tmp/rustup-init.sh -y
+    args:
+      executable: /bin/bash
+
+  - name: add cargo bin to path
+    lineinfile:
+      line: "export PATH=$HOME/.cargo/bin:$PATH"
+      path: "$HOME/.bashrc"
+  when: not is_rust_installed.stat.exists
+
+- name: Get rust-analyzer
+  get_url:
+    url: "https://github.com/rust-analyzer/rust-analyzer/releases/latest/download/rust-analyzer-x86_64-unknown-linux-gnu.gz"
+    dest: /tmp/rust-analyzer.gz
+
+- name: Install rust analyzer
+  shell: |
+    gunzip -c /tmp/rust-analyzer.gz > /usr/bin/rust-analyzer
+    chmod a+x /usr/bin/rust-analyzer
+  args:
+    creates: /usr/bin/rust-analyzer
+  become: yes
