@@ -1,0 +1,18 @@
+---
+- name: Download key packages
+  apt:
+    name:
+      - curl
+      - git
+      - net-tools
+      - tree
+    state: present
+  become: yes
+
+- name: Copy over some dotfiles
+  copy:
+    src: "{{ item }}"
+    dest: "$HOME/.{{ item }}"
+  with_items:
+    - gitconfig
+    - inputrc
