@@ -42,6 +42,7 @@ if has('nvim')
     Plug 'habamax/vim-alchemist'
     Plug 'neovim/nvim-lspconfig'
     Plug 'nvim-lua/completion-nvim'
+    Plug 'justinmk/vim-dirvish'
   call plug#end()
 
   colorscheme alchemist
