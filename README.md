@@ -3,7 +3,8 @@
 This repo (will) contain various tools for working with and in VMs.
 
 Currently, it has an Ansible playbook + Vagrantfile to bring up a Rust
-development environment with `rust-analyzer` and NVIM 0.5 with LSP integration.
+development environment with `rust-analyzer` and `nvim >= 0.5` with LSP
+integration.
 
 ### Vagrantfile
 

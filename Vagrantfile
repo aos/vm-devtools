@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant"
 
   config.vm.provider "libvirt" do |vb|
-    vb.cpus = 4
+    vb.cpus = 2
     vb.memory = 2048
   end
 
