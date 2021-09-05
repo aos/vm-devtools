@@ -29,79 +29,82 @@ set nocp
 syntax on
 filetype plugin indent on
 
-" nvim specific things
-if has('nvim')
-  " auto-install vimplug and plugins
-  if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
-    silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs
-      \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-  endif
+if !has('nvim')
+  finish
+endif
 
-  call plug#begin(stdpath('data') . '/plugged')
-    Plug 'habamax/vim-alchemist'
-    Plug 'neovim/nvim-lspconfig'
-    Plug 'nvim-lua/completion-nvim'
-    Plug 'justinmk/vim-dirvish'
-  call plug#end()
+" nvim-specific settings
 
-  colorscheme alchemist
+" auto-install vimplug and plugins
+if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
+  silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
 
-  lua << EOF
-  -- LSP global
-  vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-    vim.lsp.diagnostic.on_publish_diagnostics, {
-      -- enable signs
-      virtual_text = false,
-      update_in_insert = false,
-      signs = true,
+call plug#begin(stdpath('data') . '/plugged')
+  Plug 'habamax/vim-alchemist'
+  Plug 'neovim/nvim-lspconfig'
+  Plug 'nvim-lua/completion-nvim'
+  Plug 'justinmk/vim-dirvish'
+call plug#end()
+
+colorscheme alchemist
+
+lua << EOF
+-- LSP global
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics, {
+    -- enable signs
+    virtual_text = false,
+    update_in_insert = false,
+    signs = true,
+  }
+)
+local nvim_lsp = require('lspconfig')
+local on_attach = function(client, bufnr)
+  -- completion
+  require('completion').on_attach(client, bufnr)
+
+  -- Mappings
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+  -- Enable completion triggered by <c-x><c-o>
+  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  -- Mappings
+  local opts = { noremap=true, silent=true }
+
+  buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.diagnostic.show_line_diagnostics({focusable=false})<CR>', opts)
+  buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  buf_set_keymap('n', 'gr', '<Cmd>lua vim.lsp.buf.references()<CR>', opts)
+
+  buf_set_keymap('n', '<C-k>', '<Cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+  buf_set_keymap('n', '<C-j>', '<Cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+end
+
+-- LSP rust
+nvim_lsp.rust_analyzer.setup({
+  on_attach = on_attach,
+  settings = {
+    ["rust-analyzer"] = {
+      assist = {
+        importGranularity = "module",
+        importPrefix = "by_self",
+      },
+      cargo = {
+        loadOutDirsFromCheck = true
+      },
+      procMacro = {
+        enable = true
+      },
     }
-  )
-  local nvim_lsp = require('lspconfig')
-  local on_attach = function(client, bufnr)
-    -- completion
-    require('completion').on_attach(client, bufnr)
-
-    -- Mappings
-    local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-    local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
-
-    -- Enable completion triggered by <c-x><c-o>
-    buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-    -- Mappings
-    local opts = { noremap=true, silent=true }
-
-    buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.diagnostic.show_line_diagnostics({focusable=false})<CR>', opts)
-    buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
-    buf_set_keymap('n', 'gr', '<Cmd>lua vim.lsp.buf.references()<CR>', opts)
-
-    buf_set_keymap('n', '<C-k>', '<Cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
-    buf_set_keymap('n', '<C-j>', '<Cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
-  end
-
-  -- LSP rust
-  nvim_lsp.rust_analyzer.setup({
-    on_attach = on_attach,
-    settings = {
-      ["rust-analyzer"] = {
-        assist = {
-          importGranularity = "module",
-          importPrefix = "by_self",
-        },
-        cargo = {
-          loadOutDirsFromCheck = true
-        },
-        procMacro = {
-          enable = true
-        },
-      }
-    }
-  })
+  }
+})
 EOF
 
-  set completeopt=menuone,noinsert,noselect
-  " Use <Tab> and <S-Tab> to navigate through popup menu
-  inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-  inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-endif
+set completeopt=menuone,noinsert,noselect
+" Use <Tab> and <S-Tab> to navigate through popup menu
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
