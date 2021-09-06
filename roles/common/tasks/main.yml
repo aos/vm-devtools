@@ -19,3 +19,10 @@
   with_items:
     - gitconfig
     - inputrc
+
+- name: Add user to necessary groups
+  user:
+    append: yes
+    groups: ['sudo', 'dialout']
+    user: 'vagrant'
+  become: yes
