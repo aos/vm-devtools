@@ -7,6 +7,9 @@
       - net-tools
       - tree
     state: present
+    upgrade: safe
+    update_cache: true
+    cache_valid_time: 36000
   become: yes
 
 - name: Copy over some dotfiles
