@@ -43,13 +43,13 @@ if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
 endif
 
 call plug#begin(stdpath('data') . '/plugged')
-  Plug 'habamax/vim-alchemist'
+  Plug 'cocopon/iceberg.vim'
   Plug 'neovim/nvim-lspconfig'
   Plug 'nvim-lua/completion-nvim'
   Plug 'justinmk/vim-dirvish'
 call plug#end()
 
-colorscheme alchemist
+colorscheme iceberg
 
 lua << EOF
 -- LSP global
