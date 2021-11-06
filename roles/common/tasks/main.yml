@@ -1,20 +1,42 @@
 ---
-- name: Download key packages
-  apt:
-    name:
-      - curl
-      - git
-      - net-tools
-      - tree
-    state: present
-    update_cache: true
-    cache_valid_time: 36000
-  become: yes
+- block:
+  - name: Download key packages
+    apt:
+      name:
+        - curl
+        - git
+        - net-tools
+        - tree
+      state: present
+      update_cache: true
+      cache_valid_time: 36000
 
-- name: Upgrade all packages
-  apt:
-    upgrade: safe
-    cache_valid_time: 36000
+  - name: Upgrade all packages
+    apt:
+      upgrade: safe
+      update_cache: true
+      cache_valid_time: 36000
+
+  - name: Add user to necessary groups
+    user:
+      append: yes
+      groups: ['sudo', 'dialout']
+      user: 'vagrant'
+
+  - name: Allow sudoers to sudo without password
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      regex: "^%sudo"
+      line: "%sudo ALL=(ALL:ALL) NOPASSWD: ALL"
+      validate: /usr/sbin/visudo -cf %s
+
+  - name: Disable requiretty in /etc/sudoers
+    replace:
+      dest: "/etc/sudoers"
+      regexp: '^Defaults\s+requiretty$'
+      replace: "# Defaults    requiretty"
+      validate: /usr/sbin/visudo -cf %s
   become: yes
 
 - name: Copy over some dotfiles
@@ -24,10 +46,3 @@
   with_items:
     - gitconfig
     - inputrc
-
-- name: Add user to necessary groups
-  user:
-    append: yes
-    groups: ['sudo', 'dialout']
-    user: 'vagrant'
-  become: yes

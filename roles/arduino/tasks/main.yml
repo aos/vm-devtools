@@ -2,12 +2,13 @@
 - name: Install necessary packages
   apt:
     name:
-      - libudev-dev
-      - pkgconfig
       - avrdude
       - libssl-dev
+      - libudev-dev
+      - pkg-config
     update_cache: true
     state: present
+  become: yes
 
 - name: Check if cargo is installed
   stat:
@@ -15,6 +16,6 @@
   register: is_cargo_installed
 
 - block:
-  - name: Install cargo packages: "ravedude" and "cargo-generate"
-    command: "cargo +stable install ravedude cargo-generate"
+  - name: 'Install cargo packages: "ravedude" and "cargo-generate"'
+    command: "$HOME/.cargo/bin/cargo +stable install ravedude cargo-generate"
   when: is_cargo_installed.stat.exists
