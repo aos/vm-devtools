@@ -1,11 +1,16 @@
 ---
 - name: Get some package
   apt:
-    name: ['fuse', 'git', 'python3-pip']
+    name: ['fuse', 'git', 'python3-pip', 'python3-venv']
     state: present
     update_cache: true
     cache_valid_time: 86000
   become: yes
+
+- name: Install some python utilities
+  pip:
+    name: ['pynvim', 'jedi-language-server']
+    executable: pip3
 
 - name: Install nvim
   get_url:
@@ -51,8 +56,3 @@
       set runtimepath^=~/.vim runtimepath+=~/.vim/after
       let &packpath = &runtimepath
       source ~/.vimrc
-
-- name: Install pynvim
-  pip:
-    name: pynvim
-    executable: pip3
