@@ -44,7 +44,9 @@ if !has('nvim')
   finish
 endif
 
-syntax off " we use treesitter for syntax highlighting
+" we use treesitter for syntax highlighting and filetype detection
+syntax off
+filetype plugin indent off
 
 " nvim-specific settings
 
@@ -62,9 +64,8 @@ call plug#begin(stdpath('data') . '/plugged')
   Plug 'nvim-treesitter/nvim-treesitter-textobjects'
   Plug 'nvim-lua/plenary.nvim'
   Plug 'nvim-telescope/telescope.nvim'
-  Plug 'justinmk/vim-dirvish'
-  Plug 'tpope/vim-fugitive' " Git
-  Plug 'tpope/vim-surround' " Surround parens
+  Plug 'tpope/vim-fugitive'
+  Plug 'tpope/vim-surround'
 
   "Plug 'cocopon/iceberg.vim'
   "Plug 'kyazdani42/blue-moon'
@@ -76,6 +77,11 @@ colorscheme alchemist
 
 let mapleader = ','
 set inccommand=nosplit
+
+set completeopt=menuone,noinsert,noselect
+" Use <Tab> and <S-Tab> to navigate through popup menu
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 lua << EOF
 -- highlight on yank
@@ -89,18 +95,29 @@ vim.cmd [[
 -- Telescope
 require('telescope').setup {
   defaults = {
+    layout_strategy = 'flex',
+    layout_config = {
+      flex = {
+        flip_columns = 120,
+      }
+    },
     mappings = {
       i = {
-        ['<C-u>'] = false,
-        ['<C-d>'] = false,
+        ['<C-o>'] = require('telescope.actions.layout').toggle_preview,
+      },
+      n = {
+        ['<C-o>'] = require('telescope.actions.layout').toggle_preview,
       }
-    }
-  }
+    },
+  },
 }
---Add leader shortcuts
-vim.api.nvim_set_keymap('n', '<Tab>', [[<cmd>lua require('telescope.builtin').buffers()<CR>]], { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>f', [[<cmd>lua require('telescope.builtin').find_files({previewer = false})<CR>]], { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>g', [[<cmd>lua require('telescope.builtin').live_grep()<CR>]], { noremap = true, silent = true })
+
+--Add telescope shortcuts
+local tele_opts = { noremap = true, silent = true }
+vim.api.nvim_set_keymap('n', '<Tab>', [[<cmd>lua require('telescope.builtin').buffers()<CR>]], tele_opts)
+vim.api.nvim_set_keymap('n', '-', [[<cmd>lua require('telescope.builtin').file_browser()<CR>]], tele_opts)
+vim.api.nvim_set_keymap('n', '<leader>f', [[<cmd>lua require('telescope.builtin').find_files()<CR>]], tele_opts)
+vim.api.nvim_set_keymap('n', '<leader>g', [[<cmd>lua require('telescope.builtin').live_grep()<CR>]], tele_opts)
 
 -- Treesitter configs
 -- Parsers must be installed manually via :TSInstall
@@ -156,9 +173,9 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', 'gr', '<Cmd>lua vim.lsp.buf.references()<CR>', opts)
   buf_set_keymap('n', '<leader>k', '<Cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
 
-  buf_set_keymap('n', 'gk', '<Cmd>lua vim.lsp.diagnostic.show_line_diagnostics({focusable=false})<CR>', opts)
-  buf_set_keymap('n', '<C-k>', '<Cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
-  buf_set_keymap('n', '<C-j>', '<Cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+  buf_set_keymap('n', 'gk', "<Cmd>lua vim.diagnostic.open_float(bufnr, {border='single',scope= 'line'})<CR>", opts)
+  buf_set_keymap('n', '<C-k>', "<Cmd>lua vim.diagnostic.goto_prev({float = {border='single'}})<CR>", opts)
+  buf_set_keymap('n', '<C-j>', "<Cmd>lua vim.diagnostic.goto_next({float = {border='single'}})<CR>", opts)
 
   vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
 end
@@ -166,7 +183,7 @@ end
 local defaults = {
   on_attach = on_attach,
   flags = {
-    debounce_text_changes = 200
+    debounce_text_changes = 200,
   },
   handlers = {
     ["textDocument/hover"] = vim.lsp.with(
@@ -182,9 +199,9 @@ local defaults = {
     ["textDocument/publishDiagnostics"] = vim.lsp.with(
       vim.lsp.diagnostic.on_publish_diagnostics, {
         -- enable signs
+        signs = true,
         virtual_text = false,
         update_in_insert = false,
-        signs = true,
       }
     ),
   }
@@ -204,8 +221,8 @@ local rust_analyzer = {
 }
 
 local servers = {
-  'jedi_language_server' = {},
-  'rust_analyzer' = rust_analyzer,
+  ['jedi_language_server'] = {},
+  ['rust_analyzer'] = rust_analyzer,
 }
 
 local nvim_lsp = require('lspconfig')
@@ -213,8 +230,3 @@ for server, config in pairs(servers) do
   nvim_lsp[server].setup(vim.tbl_deep_extend("force", defaults, config))
 end
 EOF
-
-set completeopt=menuone,noinsert,noselect
-" Use <Tab> and <S-Tab> to navigate through popup menu
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
