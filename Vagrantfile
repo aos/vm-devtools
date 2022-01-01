@@ -14,6 +14,7 @@ Vagrant.configure("2") do |config|
 
     v.usb vendor: "0x2341", product: "0x0042", startupPolicy: "optional" # Arduino UNO
     v.usb vendor: "0x10c4", product: "0xea60", startupPolicy: "optional" # USB-UART bridge
+    v.usb vendor: "0x0483", product: "0x572a", startupPolicy: "optional" # STM32F4
   end
 
   config.vm.provision "ansible" do |ansible|
