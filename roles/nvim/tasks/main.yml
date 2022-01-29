@@ -1,36 +1,35 @@
 ---
-- name: Get some package
-  apt:
-    name: ['fuse', 'git', 'python3-pip', 'python3-venv']
-    state: present
-    update_cache: true
-    cache_valid_time: 86000
+- block:
+  - name: Get some package
+    apt:
+      name: ['fuse', 'git', 'python3-pip', 'python3-venv']
+      state: present
+      update_cache: true
+      cache_valid_time: 86000
+
+  - name: Install nvim
+    get_url:
+      url: "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
+      dest: /usr/bin/nvim
+      mode: "0755"
+
+  - name: Make nvim default editor
+    alternatives:
+      name: editor
+      path: /usr/bin/nvim
+
+  - name: Symlink vim to nvim
+    alternatives:
+      name: vim
+      link: /usr/bin/vim
+      path: /usr/bin/nvim
+      priority: 100
   become: yes
 
-- name: Install some python utilities
+- name: Install needed python utilities
   pip:
     name: ['pynvim', 'jedi-language-server']
     executable: pip3
-
-- name: Install nvim
-  get_url:
-    url: "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
-    dest: /usr/bin/nvim
-    mode: "0755"
-  become: yes
-
-- name: Make nvim default editor
-  alternatives:
-    name: editor
-    path: /usr/bin/nvim
-  become: yes
-
-- name: Symlink vim to nvim
-  alternatives:
-    name: vim
-    path: /usr/bin/nvim
-    priority: 100
-  become: yes
 
 - name: Create directories for nvim
   file:
@@ -38,21 +37,21 @@
     state: directory
     recurse: yes
   with_items:
-    - "$HOME/.local/share/nvim/site/autoload"
-    - "$HOME/.local/share/nvim/site/plugged"
-    - "$HOME/.config/nvim"
+    - "{{ ansible_env['HOME'] }}/.local/share/nvim/site/autoload"
+    - "{{ ansible_env['HOME'] }}/.local/share/nvim/site/plugged"
+    - "{{ ansible_env['HOME'] }}/.config/nvim"
 
 - name: Add vimrc
   copy:
     src: vimrc
-    dest: "$HOME/.vimrc"
+    dest: "{{ ansible_env['HOME'] }}/.vimrc"
     mode: "0644"
 
-- name: Create basic init.vim
+- name: Create basic init.vim to forward to vimrc
   copy:
     force: yes
-    dest: "$HOME/.config/nvim/init.vim"
+    dest: "{{ ansible_env['HOME'] }}/.config/nvim/init.vim"
     content: |
       set runtimepath^=~/.vim runtimepath+=~/.vim/after
       let &packpath = &runtimepath
-      source ~/.vimrc
+      source {{ ansible_env['HOME'] }}/.vimrc

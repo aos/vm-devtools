@@ -1,0 +1,11 @@
+---
+- name: download nix tarball
+  get_url:
+    url: https://nixos.org/nix/install
+    dest: /tmp/nix_install.sh
+    mode: '777'
+
+- name: install nix
+  shell: /tmp/nix_install.sh
+  args:
+    executable: /bin/bash

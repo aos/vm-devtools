@@ -7,7 +7,7 @@ set -oue pipefail
 
 usage() {
   printf 'This script will install all the necessary tooling to bring up Ansible
-and Vagrant. Use --run to immediately run start Vagrant afterwards.
+and Vagrant. Use --run to immediately start Vagrant afterwards.
 
 Usage: %s [-h | -v | -r]\n' "$0"
 }

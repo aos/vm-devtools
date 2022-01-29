@@ -51,9 +51,9 @@ filetype plugin indent off
 " nvim-specific settings
 
 " auto-install vimplug and plugins
-if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
-  silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs
-    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+if empty(glob(stdpath('data') . '/site/autoload/plug.vim'))
+  silent execute '!curl -fLo ' . stdpath('data') . '/site/autoload/plug.vim' . ' --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
@@ -82,6 +82,12 @@ set completeopt=menuone,noinsert,noselect
 " Use <Tab> and <S-Tab> to navigate through popup menu
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+" Tree-sitter based folding
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
+set foldlevelstart=99
+highlight! link Folded Special
 
 lua << EOF
 -- highlight on yank
@@ -120,8 +126,8 @@ vim.api.nvim_set_keymap('n', '<leader>f', [[<cmd>lua require('telescope.builtin'
 vim.api.nvim_set_keymap('n', '<leader>g', [[<cmd>lua require('telescope.builtin').live_grep()<CR>]], tele_opts)
 
 -- Treesitter configs
--- Parsers must be installed manually via :TSInstall
 require('nvim-treesitter.configs').setup {
+  ensure_installed = 'maintained',
   highlight = {
     enable = true,
   },

@@ -13,7 +13,7 @@
 
   - name: Install rust using rustup
     shell: |
-      /tmp/rustup-init.sh -y
+      /tmp/rustup-init.sh -v -y
     args:
       executable: /bin/bash
 

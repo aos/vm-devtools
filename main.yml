@@ -3,7 +3,16 @@
   gather_facts: yes
 
   roles:
-    - common
-    - nvim
-    - rust
-    - arduino
+    - role: common
+      tags: common
+
+    - role: nvim
+      tags: nvim
+
+    - role: rust
+      tags: rust
+
+    - role: nix
+      tags: nix
+
+    #- arduino
