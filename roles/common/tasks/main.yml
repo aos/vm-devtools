@@ -5,6 +5,7 @@
       name:
         - curl
         - git
+        - usbutils
         - net-tools
         - tree
         - ripgrep
